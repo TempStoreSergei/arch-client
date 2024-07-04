@@ -24,8 +24,8 @@ setup_user
 # Setup autologin
 setup_autologin
 
-# Setup OpenVPN server
-setup_ssh_client
+# Setup OpenVPN client
+setup_openvpn_client
 
 # Read services
 read_services "$services_file"
