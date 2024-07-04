@@ -1,0 +1,8 @@
+{
+    "services": [
+        "sshd",
+        "nginx",
+        "openvpn-server@client",
+        "cloak-client"
+    ]
+}

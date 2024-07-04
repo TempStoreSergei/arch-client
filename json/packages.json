@@ -1,0 +1,10 @@
+{
+    "packages": [
+        "python-pip",
+        "openssh",
+        "nginx",
+        "wget",
+        "openvpn",
+        "easy-rsa"
+    ]
+}
