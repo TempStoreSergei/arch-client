@@ -8,7 +8,7 @@ setup_user() {
         info_msg "User '$username' already exists."
     else
         info_msg "Creating user '$username'..."
-        if ! sudo useradd -m -G seat "$username" || ! echo "$username:admin" | sudo chpasswd; then
+        if ! echo "$username:admin" | sudo chpasswd; then
             error_msg "Failed to create user '$username'."
             exit 1
         fi
