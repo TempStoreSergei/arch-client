@@ -69,7 +69,7 @@ create_client_config() {
 # Function to copy client files to server using SCP
 copy_client_files_to_server() {
     info_msg "Copying client files to server..."
-    if ! sudo scp "/etc/openvpn/client/$CLIENT_NAME.conf" "$SERVER_IP:/etc/openvpn/client/"; then
+    if ! sudo scp "/etc/openvpn/client/$CLIENT_NAME.conf" "fsadmin@$SERVER_IP:/etc/openvpn/client/"; then
         error_msg "Failed to copy client files to server."
         exit 1
     fi
