@@ -23,7 +23,7 @@ check_openvpn_server() {
 # Function to prompt for and validate the client name
 get_client_name() {
     read -p "Enter the client name: " CLIENT_NAME
-    if ssh -o BatchMode=yes "$SERVER_IP" "[ -d /etc/openvpn/server/ccd/$CLIENT_NAME ]"; then
+    if ssh -o BatchMode=yes "$SERVER_IP" "[ -d /etc/openvpn/server/$CLIENT_NAME ]"; then
         error_msg "Client name $CLIENT_NAME already exists on the server."
         exit 1
     fi
@@ -45,8 +45,8 @@ generate_client_cert() {
 # Function to create client configuration file
 create_client_config() {
     info_msg "Creating client configuration file..."
-    cat <<EOF > "/etc/openvpn/client/$CLIENT_NAME.ovpn"
-client
+    sudo cat <<EOF > "/etc/openvpn/client/$CLIENT_NAME.conf"
+$CLIENT_NAME
 dev tun
 proto udp
 remote $SERVER_IP 51000
@@ -58,7 +58,7 @@ ca ca.crt
 cert $CLIENT_NAME.crt
 key $CLIENT_NAME.key
 tls-auth ta.key 1
-cipher AES-256-CBC
+cipher AES-256-GCM
 auth SHA256
 verb 3
 EOF
@@ -68,7 +68,7 @@ EOF
 # Function to copy client files to server using SCP
 copy_client_files_to_server() {
     info_msg "Copying client files to server..."
-    if ! scp "/etc/openvpn/client/$CLIENT_NAME.ovpn" "$SERVER_IP:/etc/openvpn/client/"; then
+    if ! sudo scp "/etc/openvpn/client/$CLIENT_NAME.conf" "$SERVER_IP:/etc/openvpn/client/"; then
         error_msg "Failed to copy client files to server."
         exit 1
     fi
