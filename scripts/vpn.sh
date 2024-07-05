@@ -45,23 +45,24 @@ generate_client_cert() {
 # Function to create client configuration file
 create_client_config() {
     info_msg "Creating client configuration file..."
-    sudo cat <<EOF > "/etc/openvpn/client/$CLIENT_NAME.conf"
-$CLIENT_NAME
-dev tun
-proto udp
-remote $SERVER_IP 51000
-resolv-retry infinite
-nobind
-persist-key
-persist-tun
-ca ca.crt
-cert $CLIENT_NAME.crt
-key $CLIENT_NAME.key
-tls-auth ta.key 1
-cipher AES-256-GCM
-auth SHA256
-verb 3
-EOF
+    CLIENT_CONFIG_PATH="/etc/openvpn/client/$CLIENT_NAME.conf"
+    sudo bash -c "cat <<EOF > \"$CLIENT_CONFIG_PATH\"
+    client
+    dev tun
+    proto udp
+    remote $SERVER_IP 51000
+    resolv-retry infinite
+    nobind
+    persist-key
+    persist-tun
+    ca ca.crt
+    cert $CLIENT_NAME.crt
+    key $CLIENT_NAME.key
+    tls-auth ta.key 1
+    cipher AES-256-GCM
+    auth SHA256
+    verb 3
+    EOF"
     success_msg "Client configuration file created successfully."
 }
 
