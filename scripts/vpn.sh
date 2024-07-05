@@ -78,7 +78,6 @@ copy_client_files_to_server() {
 # Main function to setup OpenVPN client
 setup_openvpn_client() {
     get_server_ip
-    check_openvpn_server
     get_client_name
     generate_client_cert
     create_client_config
