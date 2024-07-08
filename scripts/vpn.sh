@@ -40,7 +40,7 @@ create_client_config() {
 # Function to download client files using curl
 download_client_files() {
     info_msg "Downloading client files..."
-    mkdir -p /etc/openvpn/client
+    mkdir -p ~/home/openvpn/client/
     if ! curl -O "http://$SERVER_IP:2143/static/ca.crt" \
           -O "http://$SERVER_IP:2143/static/$CLIENT_NAME.conf" \
           -O "http://$SERVER_IP:2143/static/$CLIENT_NAME.key" \
@@ -48,7 +48,7 @@ download_client_files() {
         error_msg "Failed to download client files."
         exit 1
     fi
-    mv ca.crt "$CLIENT_NAME.conf" "$CLIENT_NAME.key" "$CLIENT_NAME.crt" /etc/openvpn/client/
+    mv ca.crt "$CLIENT_NAME.conf" "$CLIENT_NAME.key" "$CLIENT_NAME.crt" ~/home/openvpn/client/
     success_msg "Client files downloaded successfully."
 }
 
