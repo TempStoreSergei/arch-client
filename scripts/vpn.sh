@@ -28,7 +28,7 @@ generate_client_cert() {
 # Function to create client configuration file using the curl command
 create_client_config() {
     info_msg "Creating client configuration file..."
-    RESPONSE=$(curl --header "Content-Type: application/json" --request POST --data "{\"name_client\":\"$CLIENT_NAME\"}" http://localhost:2143/api/generate)
+    RESPONSE=$(curl --header "Content-Type: application/json" --request POST --data "{\"name_client\":\"$CLIENT_NAME\"}" http://$SERVER_IP:2143/api/generate)
     if [[ $? -ne 0 ]]; then
         error_msg "Failed to generate client configuration."
         exit 1
