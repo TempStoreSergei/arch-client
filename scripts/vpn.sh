@@ -1,7 +1,6 @@
 
 #!/bin/bash
 
-# Function to prompt for and validate the server IP address
 get_server_ip() {
     read -p "Enter the OpenVPN server IP address: " SERVER_IP
     if ! ping -c 1 "$SERVER_IP" &>/dev/null; then
@@ -9,15 +8,6 @@ get_server_ip() {
         exit 1
     fi
     success_msg "Server IP $SERVER_IP is reachable."
-}
-
-# Function to check if the OpenVPN server is running
-check_openvpn_server() {
-    if ! nc -z "$SERVER_IP" 51000 &>/dev/null; then
-        error_msg "OpenVPN server is not running on $SERVER_IP:51000."
-        exit 1
-    fi
-    success_msg "OpenVPN server is running on $SERVER_IP:51000."
 }
 
 # Function to prompt for and validate the client name
@@ -33,47 +23,33 @@ get_client_name() {
 # Function to generate client certificates and keys
 generate_client_cert() {
     info_msg "Generating client certificate and key..."
-    cd /etc/easy-rsa || { error_msg "Failed to change directory."; exit 1; }
-    if ! sudo easyrsa --batch gen-req "$CLIENT_NAME" nopass &>/dev/null; then
-        error_msg "Failed to generate client certificate and key."
-        exit 1
-    fi
-    echo -e "yes\n" | sudo easyrsa --batch sign-req client "$CLIENT_NAME" &>/dev/null || { error_msg "Failed to sign client certificate."; exit 1; }
-    success_msg "Client certificate and key generated successfully."
 }
 
-# Function to create client configuration file
+# Function to create client configuration file using the curl command
 create_client_config() {
     info_msg "Creating client configuration file..."
-    CLIENT_CONFIG_PATH="/etc/openvpn/client/$CLIENT_NAME.conf"
-    sudo bash -c "cat <<EOF > \"$CLIENT_CONFIG_PATH\"
-    client
-    dev tun
-    proto udp
-    remote $SERVER_IP 51000
-    resolv-retry infinite
-    nobind
-    persist-key
-    persist-tun
-    ca ca.crt
-    cert $CLIENT_NAME.crt
-    key $CLIENT_NAME.key
-    tls-auth ta.key 1
-    cipher AES-256-GCM
-    auth SHA256
-    verb 3
-    EOF"
+    RESPONSE=$(curl --header "Content-Type: application/json" --request POST --data "{\"name_client\":\"$CLIENT_NAME\"}" http://localhost:2143/api/generate)
+    if [[ $? -ne 0 ]]; then
+        error_msg "Failed to generate client configuration."
+        exit 1
+    fi
+    echo "$RESPONSE" > "/etc/openvpn/client/$CLIENT_NAME.conf"
     success_msg "Client configuration file created successfully."
 }
 
-# Function to copy client files to server using SCP
-copy_client_files_to_server() {
-    info_msg "Copying client files to server..."
-    if ! sudo scp "/etc/openvpn/client/$CLIENT_NAME.conf" "fsadmin@$SERVER_IP:/etc/openvpn/client/"; then
-        error_msg "Failed to copy client files to server."
+# Function to download client files using curl
+download_client_files() {
+    info_msg "Downloading client files..."
+    mkdir -p /etc/openvpn/client
+    if ! curl -O "http://$SERVER_IP:2143/static/ca.crt" \
+          -O "http://$SERVER_IP:2143/static/$CLIENT_NAME.conf" \
+          -O "http://$SERVER_IP:2143/static/$CLIENT_NAME.key" \
+          -O "http://$SERVER_IP:2143/static/$CLIENT_NAME.crt"; then
+        error_msg "Failed to download client files."
         exit 1
     fi
-    success_msg "Client files copied to server successfully."
+    mv ca.crt "$CLIENT_NAME.conf" "$CLIENT_NAME.key" "$CLIENT_NAME.crt" /etc/openvpn/client/
+    success_msg "Client files downloaded successfully."
 }
 
 # Main function to setup OpenVPN client
@@ -82,5 +58,5 @@ setup_openvpn_client() {
     get_client_name
     generate_client_cert
     create_client_config
-    copy_client_files_to_server
+    download_client_files
 }
